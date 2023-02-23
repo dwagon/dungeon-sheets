@@ -16,17 +16,17 @@ class Weapon:
       The character (or NPC) that is using the weapon.
     
     """
-    name = ""
-    cost = "0 gp"
-    base_damage = "1d4"
-    damage_bonus = 0
-    attack_bonus = 0
-    damage_type = "p"
-    weight = 1  # In lbs
-    properties = ""
-    ability = "strength"
-    is_finesse = False
-    features_applied = False
+    name: str = ""
+    cost: str = "0 gp"
+    base_damage: str = "1d4"
+    damage_bonus: int = 0
+    attack_bonus: int = 0
+    damage_type: str = "p"
+    weight: int = 1  # In lbs
+    properties: str = ""
+    ability: str = "strength"
+    is_finesse: bool = False
+    features_applied: bool = False
 
     def __init__(self, wielder=None):
         self.wielder = wielder

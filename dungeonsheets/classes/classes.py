@@ -1,8 +1,36 @@
 import warnings
+from typing import TYPE_CHECKING, Any, Optional, Tuple
 
 from collections import defaultdict
 
 from dungeonsheets.features import Feature, FeatureSelector
+if TYPE_CHECKING:
+    from dungeonsheets.character import Character
+    from dungeonsheets.spells import Spell
+
+class SubClass:
+    """
+    A generic subclass object. Add more detail in the __doc__ attribute.
+    """
+
+    name: str = ""
+    features_by_level = defaultdict(list)
+    weapon_proficiencies = ()
+    _proficiencies_text: Tuple[str,...] = ()
+    spellcasting_ability: Optional[bool] = None
+    spell_slots_by_level = None
+    spells_known = ()
+    spells_prepared = ()
+
+    def __init__(self, owner: Character) -> None:
+        self.owner = owner
+        self.__doc__ = self.__doc__ or SubClass.__doc__
+
+    def __str__(self) -> str:
+        return self.name
+
+    def __repr__(self) -> str:
+        return '"{:s}"'.format(self.name)
 
 
 class CharClass:
@@ -10,28 +38,28 @@ class CharClass:
     A generic Character Class (not to be confused with builtin class)
     """
 
-    name = "Default"
-    level = 1
-    hit_dice_faces = 2
-    subclass_select_level = 3
+    name: str = "Default"
+    level: int = 1
+    hit_dice_faces: int = 2
+    subclass_select_level: int = 3
     weapon_proficiencies = ()
-    _proficiencies_text = ()
+    _proficiencies_text: Tuple[str,...] = ()
     multiclass_weapon_proficiencies = ()
     _multiclass_proficiencies_text = ()
     saving_throw_proficiencies = ()
     primary_abilities = ()
     languages = ()
     class_skill_choices = ()
-    num_skill_choices = 2
+    num_skill_choices: int = 2
     spellcasting_ability = None
     spell_slots_by_level = None
-    spells_known = ()
+    spells_known: Tuple[Spell,...] = ()
     spells_prepared = ()
-    subclass = None
+    subclass: Optional[SubClass] = None
     subclasses_available = ()
     features_by_level = defaultdict(list)
 
-    def __init__(self, level, owner=None, subclass=None, feature_choices=[], **params):
+    def __init__(self, level: int, owner: Optional[Character]=None, subclass: Optional[str]=None, feature_choices=[], **params: Any) -> None:
         self.level = level
         self.owner = owner
         # For ex: add "char.Monk" attribute
@@ -57,7 +85,7 @@ class CharClass:
         if isinstance(self.subclass, SubClass):
             self.apply_subclass(feature_choices=feature_choices)
 
-    def select_subclass(self, subclass_str):
+    def select_subclass(self, subclass_str: str) -> Optional[SubClass]:
         """
         Return a SubClass object corresponding to given string.
 
@@ -72,7 +100,7 @@ class CharClass:
         warnings.warn(f"Could not find subclass {subclass_str}.")
         return None
 
-    def apply_subclass(self, feature_choices=[]):
+    def apply_subclass(self, feature_choices=[]) -> None:
         if not isinstance(self.subclass, SubClass):
             return
         subcls = self.subclass
@@ -109,47 +137,22 @@ class CharClass:
         return features
 
     @property
-    def is_spellcaster(self):
+    def is_spellcaster(self) -> bool:
         result = self.spellcasting_ability is not None
         return result
 
-    def spell_slots(self, spell_level):
+    def spell_slots(self, spell_level: int)->int:
         """How many spells slots are available for this spell level."""
         if self.spell_slots_by_level is None:
             return 0
         else:
             return self.spell_slots_by_level[self.level][spell_level]
 
-    def __str__(self):
+    def __str__(self) -> str:
         s = "Level {:d} {:s}".format(self.level, self.name)
         if isinstance(self.subclass, SubClass):
             s += " ({:s})".format(str(self.subclass))
         return s
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '"{:s}"'.format(str(self))
-
-
-class SubClass:
-    """
-    A generic subclass object. Add more detail in the __doc__ attribute.
-    """
-
-    name = ""
-    features_by_level = defaultdict(list)
-    weapon_proficiencies = ()
-    _proficiencies_text = ()
-    spellcasting_ability = None
-    spell_slots_by_level = None
-    spells_known = ()
-    spells_prepared = ()
-
-    def __init__(self, owner):
-        self.owner = owner
-        self.__doc__ = self.__doc__ or SubClass.__doc__
-
-    def __str__(self):
-        return self.name
-
-    def __repr__(self):
-        return '"{:s}"'.format(self.name)

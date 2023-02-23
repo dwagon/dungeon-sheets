@@ -42,19 +42,21 @@ content can be used directly from *import_homebrew*::
 import sys
 from pathlib import Path
 from functools import lru_cache
+import importlib
 import importlib.util
+import types
 from typing import Union, List, Optional
 
 from dungeonsheets import exceptions
 
 
 class ContentRegistry:
-    modules = None
+    modules: Optional[list] = None
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.modules = []
 
-    def add_module(self, new_module):
+    def add_module(self, new_module: str) -> None:
         """Register a module with this registry.
 
         Adding the same module multiple times has no effect.
@@ -68,19 +70,21 @@ class ContentRegistry:
             # Register the module
             registry = ContentRegistry()
             registry.add_module(__name__)
-        
+
         """
         # Try and look up the module by name
         try:
             new_module = sys.modules[new_module]
         except KeyError:
             if isinstance(new_module, str):
-                raise exceptions.ContentNotFound(f"Module could not be resolved: {repr(new_module)}")
+                raise exceptions.ContentNotFound(
+                    f"Module could not be resolved: {repr(new_module)}"
+                )
         # Add the imported module to the list for later
         if new_module not in self.modules:
             self.modules.append(new_module)
 
-    def findattr(self, name, valid_classes=[]):
+    def findattr(self, name: str, valid_classes=[]):
         """Resolve the name of a piece of content to the corresponding Class.
 
         Similar to builtin getattr(obj, name) but more forgiving to
@@ -130,13 +134,17 @@ class ContentRegistry:
             found_attrs = [attr for attr, v in zip(found_attrs, is_valid) if v]
         # Check that we found a valid, unique attribute
         if len(found_attrs) == 0:
-            raise exceptions.ContentNotFound(f"Modules {self.modules} have no attribute {name}")
+            raise exceptions.ContentNotFound(
+                f"Modules {self.modules} have no attribute {name}"
+            )
         elif len(found_attrs) > 1:
-            raise exceptions.AmbiguousContent(f"Found multiple content entries for {name}")
+            raise exceptions.AmbiguousContent(
+                f"Found multiple content entries for {name}"
+            )
         else:
             attr = found_attrs[0]
         # Apply weapon/etc. bonuses
-        if bonus > 0 and hasattr(attr, 'improved_version'):
+        if bonus > 0 and hasattr(attr, "improved_version"):
             attr = attr.improved_version(bonus)
         return attr
 
@@ -163,7 +171,7 @@ def find_content(name: str, valid_classes: Optional[List] = None):
 
 
 @lru_cache()
-def import_homebrew(filepath: Union[str, Path]):
+def import_homebrew(filepath: Union[str, Path]) -> types.ModuleType:
     """Import a module file containing homebrew content.
 
     This is intended to be used in a character/GM sheet to load in
@@ -180,8 +188,12 @@ def import_homebrew(filepath: Union[str, Path]):
       The imported module of homebrew content.
 
     """
-    spec = importlib.util.spec_from_file_location("module.name", filepath)
-    mod = importlib.util.module_from_spec(spec)
+    spec: Optional[
+        importlib.machinery.ModuleSpec
+    ] = importlib.util.spec_from_file_location("module.name", filepath)
+    assert spec is not None
+    mod: types.ModuleType = importlib.util.module_from_spec(spec)
+    assert mod is not None
     spec.loader.exec_module(mod)
     default_content_registry.add_module(mod)
     return mod

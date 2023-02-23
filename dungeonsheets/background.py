@@ -1,3 +1,4 @@
+from typing import List, Set, Tuple, Type
 from dungeonsheets import features as feats
 from dungeonsheets.content_registry import default_content_registry
 
@@ -6,22 +7,22 @@ default_content_registry.add_module(__name__)
 
 
 class Background:
-    name = "Generic background"
+    name: str = "Generic background"
     owner = None
-    skill_proficiencies = ()
+    skill_proficiencies: Tuple[str, ...] = ()
     weapon_proficiencies = ()
     proficiencies_text = ()
-    skill_choices = ()
-    num_skill_choices = 0
-    features = ()
-    languages = ()
+    skill_choices: Tuple[str, ...] = ()
+    num_skill_choices: int = 0
+    features: Tuple[Type[feats.Feature], ...] = ()
+    languages: Tuple[str, ...] = ()
 
     def __init__(self, owner=None):
         self.owner = owner
         cls = type(self)
         self.features = tuple([f(owner=self.owner) for f in cls.features])
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
 

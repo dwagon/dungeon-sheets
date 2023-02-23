@@ -2,6 +2,7 @@ import random
 import re
 from collections import namedtuple
 from itertools import groupby
+from typing import Optional
 
 from dungeonsheets.exceptions import DiceError
 
@@ -10,7 +11,7 @@ dice_part_re = re.compile(r"[0-9d]+", flags=re.I)
 Dice = namedtuple("Dice", ("num", "faces", "modifier"))
 
 
-def read_dice_str(dice_str):
+def read_dice_str(dice_str: str) -> Dice:
     """Interpret a D&D dice string, eg. 3d10+2.
 
     Returns
@@ -32,13 +33,15 @@ def read_dice_str(dice_str):
     dice = Dice(num, faces, modifier)
     return dice
 
-def _dice_mean(dice, force_min=True):
+
+def _dice_mean(dice: Dice, force_min: bool = True) -> int:
     """Support function for calculating dice string mean."""
     dmg_min = dice.num + dice.modifier
-    dmg_max = dice.num*dice.faces + dice.modifier
-    return (dmg_max - dmg_min)/2.0 + dmg_min
+    dmg_max = dice.num * dice.faces + dice.modifier
+    return (dmg_max - dmg_min) / 2.0 + dmg_min
 
-def combine_dice(dice_str):
+
+def combine_dice(dice_str: str) -> str:
     """Condense a dice string into its simplest representation.
 
     For example: "1d8 + 5 + 2d8 + 2" would be reduced to "3d8 + 7".
@@ -47,10 +50,10 @@ def combine_dice(dice_str):
     =======
     new_dice_str
       A new, condensed string for the given dice.
-    
+
     """
     dice = []
-    bonuses = 0
+    bonuses: int = 0
     # Sort out each portion of the dice string
     for part in dice_part_re.findall(dice_str):
         try:
@@ -67,15 +70,16 @@ def combine_dice(dice_str):
     new_dice_str = " + ".join(new_parts)
     return new_dice_str
 
-def roll(a, b=None):
+
+def roll(a: int, b: Optional[int] = None) -> int:
     """roll(20) means roll 1d20, roll(2, 6) means roll 2d6"""
     if b is None:
         return random.randint(1, a)
     else:
         return sum([random.randint(1, b) for _ in range(a)])
-    
-def dice_roll_mean(dice_text):
+
+
+def dice_roll_mean(dice_text: str) -> int:
     """Takes a dice string like '3d6 +3' and returns its average roll."""
     dice = read_dice_str(dice_text)
     return round(_dice_mean(dice))
-

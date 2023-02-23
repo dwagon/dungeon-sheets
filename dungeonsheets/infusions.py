@@ -1,3 +1,4 @@
+from typing import Tuple
 from dungeonsheets.content_registry import default_content_registry
 
 
@@ -5,10 +6,10 @@ default_content_registry.add_module(__name__)
 
 
 class Infusion:
-    name = "Unknown infusion"
-    item = "Item to be infused"
-    prerequisite = ""
-    classes = ("Artificer",)
+    name: str = "Unknown infusion"
+    item: str = "Item to be infused"
+    prerequisite:str = ""
+    classes: Tuple[str,...] = ("Artificer",)
 
     def __str__(self):
         indicator = ("$", self.special_material)
@@ -27,7 +28,7 @@ class Infusion:
         return 0
 
     @property
-    def special_material(self):
+    def special_material(self) -> str:
         return "worth at least" in self.item.lower()
 
 

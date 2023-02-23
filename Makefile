@@ -8,3 +8,6 @@ install:
 test:
 	python -m unittest discover tests/
 
+venv:
+	python3 -m venv .venv
+	.venv/bin/pip install -r requirements-tests.txt

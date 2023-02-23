@@ -48,7 +48,7 @@ xp_by_challenge_rating = {
 }
 
 
-def challenge_rating_to_xp(cr):
+def challenge_rating_to_xp(cr: int) -> str:
     """Determine the XP awarded for slaying a monster with the given
     challenge rating *cr*.
 
@@ -77,36 +77,36 @@ class Monster(Creature, metaclass=SpellFactory):
 
     """A monster that may be encountered when adventuring."""
 
-    name = "Generic Monster"
-    description = ""
-    challenge_rating = 0
-    skills = "Perception +3, Stealth +4"
-    damage_resistances = ""
-    damage_immunities = ""
-    damage_vulnerabilities = ""
-    condition_immunities = ""
-    saving_throws = ""
+    name:str = "Generic Monster"
+    description:str = ""
+    challenge_rating:int = 0
+    skills: str = "Perception +3, Stealth +4"
+    damage_resistances:str = ""
+    damage_immunities:str = ""
+    damage_vulnerabilities:str = ""
+    condition_immunities:str = ""
+    saving_throws:str = ""
     # TODO: Consider refactoring stats.Speed to consider all of these
     # just like we do stats.Ability
-    swim_speed = 0
-    fly_speed = 0
-    climb_speed = 0
-    burrow_speed = 0
-    hp_max = 10
-    hit_dice = "1d6"
+    swim_speed:int = 0
+    fly_speed:int = 0
+    climb_speed:int = 0
+    burrow_speed:int = 0
+    hp_max:int = 10
+    hit_dice:str = "1d6"
     spells = []
 
     def __init__(self):
         super(Monster, self).__init__()
 
     @property
-    def is_beast(self):
+    def is_beast(self) -> bool:
         is_beast = "beast" in self.description.lower()
         return is_beast
 
-    def has_feature(self, *args, **kwargs):
+    def has_feature(self, *args, **kwargs) -> bool:
         return False
     
     @property
-    def is_spellcaster(self):
+    def is_spellcaster(self) -> bool:
         return len(self.spells) > 0

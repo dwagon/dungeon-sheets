@@ -39,7 +39,7 @@ damage_nodice = re.compile(r"hit:.*?damage", re.IGNORECASE|re.DOTALL)
 modifier = re.compile(r"[+-].*?(\d+)", re.IGNORECASE|re.DOTALL)
 single_damage = re.compile(r"(\d+)")
 
-def mod_str(modifier):
+def mod_str(modifier: int) -> str:
     """Converts a modifier to a string, eg 2 -> '+2'."""
     try:
         s = "{:+d}".format(modifier)

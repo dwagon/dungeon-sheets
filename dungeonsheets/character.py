@@ -5,7 +5,7 @@ import warnings
 import math
 import logging
 from types import ModuleType
-from typing import Sequence, Union, MutableMapping
+from typing import Any, List, Optional, Sequence, Union, MutableMapping, TYPE_CHECKING
 
 import jinja2
 
@@ -27,6 +27,9 @@ from dungeonsheets.weapons import Weapon
 from dungeonsheets.content import Creature
 from dungeonsheets.dice import combine_dice
 from dungeonsheets.equipment_reader import equipment_weight_parser
+
+if TYPE_CHECKING:
+    from dungeonsheets.classes import CharClass
 
 
 log = logging.getLogger(__name__)
@@ -78,18 +81,19 @@ multiclass_spellslots_by_level = {
 
 class Character(Creature):
     """A generic player character."""
+
     # Character-specific
-    name = "Unknown Hero"
-    player_name = ""
-    xp = 0
+    name: str = "Unknown Hero"
+    player_name: str = ""
+    xp: int = 0
     # Extra hit points info, for characters only
-    hp_current = None
-    hp_temp = 0
-    hit_dice_current = ""
+    hp_current: Optional[int] = None
+    hp_temp: int = 0
+    hit_dice_current: str = ""
     # Base stats (ability scores)
-    inspiration = False
-    attacks_and_spellcasting = ""
-    class_list = list()
+    inspiration: bool = False
+    attacks_and_spellcasting: str = ""
+    class_list: List[CharClass] = list()
     _background = None
     _companions = []
     _carrying_capacity = 0
@@ -100,31 +104,31 @@ class Character(Creature):
     personality_traits = (
         "TODO: Describe how your character behaves, interacts with others"
     )
-    ideals = "TODO: Describe what values your character believes in."
-    bonds = "TODO: Describe your character's commitments or ongoing quests."
-    flaws = "TODO: Describe your character's interesting flaws."
-    features_and_traits = "Describe any other features and abilities."
-    chosen_tools = ""
+    ideals: str = "TODO: Describe what values your character believes in."
+    bonds: str = "TODO: Describe your character's commitments or ongoing quests."
+    flaws: str = "TODO: Describe your character's interesting flaws."
+    features_and_traits: str = "Describe any other features and abilities."
+    chosen_tools: str = ""
 
     _proficiencies_text = list()
 
     # Appearance
     portrait = False
-    age = 0
-    height = ""
-    weight = ""
-    eyes = ""
-    skin = ""
-    hair = ""
+    age: int = 0
+    height: str = ""
+    weight: str = ""
+    eyes: str = ""
+    skin: str = ""
+    hair: str = ""
     # Background
-    allies = ""
-    faction_name = ""
+    allies: str = ""
+    faction_name: str = ""
     # faction_symbol = placeholder not sure how to implement
-    backstory = ""
-    additional_description = ""
-    other_feats_traits = ""
-    treasure = ""
-    org_name = ""
+    backstory: str = ""
+    additional_description: str = ""
+    other_feats_traits: str = ""
+    treasure: str = ""
+    org_name: str = ""
 
     def __init__(
         self,
@@ -199,16 +203,16 @@ class Character(Creature):
         self.custom_features = list()
         self.feature_choices = list()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<{self.class_name}: {self.name}>"
 
     def add_class(
         self,
-        cls: (classes.CharClass, type, str),
-        level: (int, str),
+        cls: tuple[classes.CharClass, type, str],
+        level: tuple[int, str],
         subclass=None,
         feature_choices: Sequence = [],
     ):
@@ -477,11 +481,11 @@ class Character(Creature):
     @property
     def spellcasting_classes_excluding_warlock(self):
         return [c for c in self.spellcasting_classes if not type(c) == classes.Warlock]
-    
+
     @property
     def is_spellcaster(self):
         return len(self.spellcasting_classes) > 0
-    
+
     def spell_slots(self, spell_level):
         warlock_slots = 0
         for c in self.spellcasting_classes:
@@ -723,17 +727,20 @@ class Character(Creature):
             s = "(See Features Page)\n\n--" + s
             s += "\n\n=================\n\n"
         return s
-    
+
     @property
     def features_summary(self):
         # save space for informed features and traits
         if hasattr(self, "features_and_traits"):
             info_list = ["**Other Features**"]
-            info_list += [text.strip() for text in self.features_and_traits.split("\n")
-                     if not(text.isspace())]
+            info_list += [
+                text.strip()
+                for text in self.features_and_traits.split("\n")
+                if not (text.isspace())
+            ]
             N = len(info_list)
             for text in info_list:
-                if len(text) > 26: # 26 is just a guess for expected size of lines
+                if len(text) > 26:  # 26 is just a guess for expected size of lines
                     N += 1
             if N > 30:
                 return "\n".join(info_list[:30]) + "\n(...)"
@@ -760,23 +767,28 @@ class Character(Creature):
 
     @property
     def carrying_capacity(self):
-        _ccModD = {"tiny":0.5, "small":1, "medium":1,
-                   "large":2, "huge":4, "gargantum":8}
+        _ccModD = {
+            "tiny": 0.5,
+            "small": 1,
+            "medium": 1,
+            "large": 2,
+            "huge": 4,
+            "gargantum": 8,
+        }
         cc_mod = _ccModD[self.race.size.lower()]
-        return 15*self.strength.value*cc_mod
-            
+        return 15 * self.strength.value * cc_mod
+
     @property
     def carrying_weight(self):
-        weight = equipment_weight_parser(self.equipment, 
-                                         self.equipment_weight_dict)
+        weight = equipment_weight_parser(self.equipment, self.equipment_weight_dict)
         weight += sum([w.weight for w in self.weapons])
         if self.armor:
             weight += self.armor.weight
         if self.shield:
             weight += 6
-        weight += sum([self.cp, self.sp, self.ep, self.gp, self.pp])/50
+        weight += sum([self.cp, self.sp, self.ep, self.gp, self.pp]) / 50
         return round(weight, 2)
-    
+
     @property
     def equipment_text(self):
         eq_list = []
@@ -785,13 +797,16 @@ class Character(Creature):
             eq_list += [item.name for item in self.magic_items]
         if hasattr(self, "equipment") and len(self.equipment.strip()) > 0:
             eq_list += ["**Other Equipment**"]
-            eq_list += [text.strip() for text in self.equipment.split("\n")
-                     if not(text.isspace())]
+            eq_list += [
+                text.strip()
+                for text in self.equipment.split("\n")
+                if not (text.isspace())
+            ]
         cw, cc = self.carrying_weight, self.carrying_capacity
         eq_list += [f"**Weight:** {cw} lb\n\n**Capacity:** {cc} lb"]
-        
+
         return "\n\n".join(eq_list)
-    
+
     @property
     def proficiencies_by_type(self):
         prof_dict = {}
@@ -801,58 +816,71 @@ class Character(Creature):
         elif weapons.SimpleWeapon in w_pro:
             prof_dict["Weapons"] = ["Simple weapons"]
             for w in w_pro:
-                if not(issubclass(w, weapons.SimpleWeapon)):
+                if not (issubclass(w, weapons.SimpleWeapon)):
                     prof_dict["Weapons"] += [w.name]
         else:
             prof_dict["Weapons"] = [w.name for w in w_pro]
         if "Weapons" in prof_dict.keys():
             prof_dict["Weapons"] = ", ".join(prof_dict["Weapons"]) + "."
-        armor_types = ["all armor", "light armor", "medium armor", 
-                       "heavy armor"]
-        prof_set = set([prof.lower().strip().strip('.') 
-                     for prof in self.proficiencies_text.split(',')])
+        armor_types = ["all armor", "light armor", "medium armor", "heavy armor"]
+        prof_set = set(
+            [
+                prof.lower().strip().strip(".")
+                for prof in self.proficiencies_text.split(",")
+            ]
+        )
         prof_dict["Armor"] = [ar for ar in armor_types if ar in prof_set]
-        if len(prof_dict["Armor"]) > 2 or 'all armor' in prof_set:
+        if len(prof_dict["Armor"]) > 2 or "all armor" in prof_set:
             prof_dict["Armor"] = ["All armor"]
-        if 'shields' in prof_set:
+        if "shields" in prof_set:
             prof_dict["Armor"] += ["shields"]
         prof_dict["Armor"] = ", ".join(prof_dict["Armor"]) + "."
-        if hasattr(self, 'chosen_tools'):
+        if hasattr(self, "chosen_tools"):
             prof_dict["Other"] = self.chosen_tools
         return prof_dict
-    
+
     @property
     def spell_casting_info(self):
         """Returns a ready-to-use dictionary for spellsheets."""
-        level_names = ["Cantrip", 
-                       'FirstLevelSpell',
-                       'SecondLevelSpell',
-                       'ThirdLevelSpell',
-                       'FourthLevelSpell',
-                       'FifthLevelSpell',
-                       'SixthLevelSpell',
-                       'SeventhLevelSpell',
-                       'EighthLevelSpell',
-                       'NinthLevelSpell']
-        spell_info = {'head':{
-        "classes_and_levels": " / ".join(
-        [c.name + " " + str(c.level) for c in self.spellcasting_classes]
-        ),
-        "abilities": " / ".join(
-            [c.spellcasting_ability.upper()[:3] 
-             for c in self.spellcasting_classes]
-            ),
-        "DCs": " / ".join(
-            [str(self.spell_save_dc(c)) 
-             for c in self.spellcasting_classes]
-            ),
-        "bonuses": " / ".join(
-            ["{:+d}".format(self.spell_attack_bonus(c)) 
-             for c in self.spellcasting_classes]
-            ),
-        }}
-        slots = {level_names[k]:self.spell_slots(k) for k in range(1, 10)
-                 if self.spell_slots(k) > 0}
+        level_names = [
+            "Cantrip",
+            "FirstLevelSpell",
+            "SecondLevelSpell",
+            "ThirdLevelSpell",
+            "FourthLevelSpell",
+            "FifthLevelSpell",
+            "SixthLevelSpell",
+            "SeventhLevelSpell",
+            "EighthLevelSpell",
+            "NinthLevelSpell",
+        ]
+        spell_info = {
+            "head": {
+                "classes_and_levels": " / ".join(
+                    [c.name + " " + str(c.level) for c in self.spellcasting_classes]
+                ),
+                "abilities": " / ".join(
+                    [
+                        c.spellcasting_ability.upper()[:3]
+                        for c in self.spellcasting_classes
+                    ]
+                ),
+                "DCs": " / ".join(
+                    [str(self.spell_save_dc(c)) for c in self.spellcasting_classes]
+                ),
+                "bonuses": " / ".join(
+                    [
+                        "{:+d}".format(self.spell_attack_bonus(c))
+                        for c in self.spellcasting_classes
+                    ]
+                ),
+            }
+        }
+        slots = {
+            level_names[k]: self.spell_slots(k)
+            for k in range(1, 10)
+            if self.spell_slots(k) > 0
+        }
         spell_info["slots"] = slots
         spell_list = {}
         for s in self.spells:
@@ -872,7 +900,7 @@ class Character(Creature):
             s += ", "
         return s
 
-    def wear_armor(self, new_armor):
+    def wear_armor(self, new_armor) -> None:
         """Accepts a string or Armor class and replaces the current armor.
 
         If a string is given, then a subclass of
@@ -895,7 +923,7 @@ class Character(Creature):
                 new_armor = NewArmor()
             self.armor = new_armor
 
-    def wield_shield(self, shield):
+    def wield_shield(self, shield) -> None:
         """Accepts a string or Shield class and replaces the current armor.
 
         If a string is given, then a subclass of
@@ -907,10 +935,12 @@ class Character(Creature):
         """
         if shield not in ("", "None", None):
             msg = 'Unknown shield "{}". Please ad it to ``shields.py``.'
-            NewShield = self._resolve_mechanic(shield, SuperClass=armor.Shield, warning_message=msg)
+            NewShield = self._resolve_mechanic(
+                shield, SuperClass=armor.Shield, warning_message=msg
+            )
             self.shield = NewShield()
 
-    def wield_weapon(self, weapon):
+    def wield_weapon(self, weapon) -> None:
         """Accepts a string and adds it to the list of wielded weapons.
 
         Parameters
@@ -936,11 +966,11 @@ class Character(Creature):
         if len(my_weapons) == 0 or hasattr(self, "Monk"):
             my_weapons.append(weapons.Unarmed(wielder=self))
         return my_weapons
-    
+
     @property
-    def hit_dice(self):
+    def hit_dice(self) -> str:
         """What type and how many dice to use for re-gaining hit points.
-        
+
         To change, set hit_dice_num and hit_dice_faces."""
         dice_s = " + ".join([f"{c.level}d{c.hit_dice_faces}" for c in self.class_list])
         dice_s = combine_dice(dice_s)
@@ -958,7 +988,7 @@ class Character(Creature):
         self.primary_class.hit_dice_faces = faces
 
     @property
-    def proficiency_bonus(self):
+    def proficiency_bonus(self) -> int:
         if self.level < 5:
             prof = 2
         elif 5 <= self.level < 9:
@@ -999,15 +1029,13 @@ class Character(Creature):
             return self.Ranger.ranger_beast
         else:
             return None
-    
+
     @ranger_beast.setter
     def ranger_beast(self, beast):
-        msg = (
-            f"Companion '{beast}' not found. Please add it to"
-                        " ``monsters.py``" )
+        msg = f"Companion '{beast}' not found. Please add it to" " ``monsters.py``"
         beast = self._resolve_mechanic(beast, monsters.Monster, msg)
         self.Ranger.ranger_beast = (beast(), self.proficiency_bonus)
-        
+
     @property
     def companions(self):
         """Return the list of companions and summonables"""
@@ -1017,20 +1045,18 @@ class Character(Creature):
         return companions
 
     @companions.setter
-    def companions(self, compas):
+    def companions(self, compas) -> None:
         companions_list = []
         # Retrieve the actual monster classes if possible
         for compa in compas:
-            msg = (
-                f"Companion '{compa}' not found. Please add it to"
-                            " ``monsters.py``" )
+            msg = f"Companion '{compa}' not found. Please add it to" " ``monsters.py``"
             new_compa = self._resolve_mechanic(compa, monsters.Monster, msg)
             companions_list.append(new_compa())
         # Save the updated list for later
         self._companions = companions_list
 
     @property
-    def infusions_text(self):
+    def infusions_text(self) -> tuple[str, ...]:
         if hasattr(self, "Artificer"):
             return tuple([i.name for i in self.infusions])
         else:
@@ -1070,7 +1096,9 @@ class Character(Creature):
         log.debug(f"New character subclasses: {char.subclasses}")
         return char
 
-    def save(self, filename, template_file="character_template.txt"):
+    def save(
+        self, filename: str, template_file: str = "character_template.txt"
+    ) -> None:
         # Create the template context
         context = dict(
             char=self,
@@ -1086,7 +1114,7 @@ class Character(Creature):
         with open(filename, mode="w") as f:
             f.write(text)
 
-    def to_pdf(self, filename, **kwargs):
+    def to_pdf(self, filename: str, **kwargs: Any) -> None:
         from dungeonsheets.make_sheets import make_sheet
 
         if filename.endswith(".pdf"):
@@ -1096,91 +1124,91 @@ class Character(Creature):
 
 # Add backwards compatibility for tests
 class Artificer(Character):
-    def __init__(self, level=1, **attrs):
+    def __init__(self, level: int = 1, **attrs: Any):
         attrs["classes"] = ["Artificer"]
         attrs["levels"] = [level]
         super().__init__(**attrs)
 
 
 class Barbarian(Character):
-    def __init__(self, level=1, **attrs):
+    def __init__(self, level: int = 1, **attrs: Any):
         attrs["classes"] = ["Barbarian"]
         attrs["levels"] = [level]
         super().__init__(**attrs)
 
 
 class Bard(Character):
-    def __init__(self, level=1, **attrs):
+    def __init__(self, level: int = 1, **attrs: Any):
         attrs["classes"] = ["Bard"]
         attrs["levels"] = [level]
         super().__init__(**attrs)
 
 
 class Cleric(Character):
-    def __init__(self, level=1, **attrs):
+    def __init__(self, level: int = 1, **attrs: Any):
         attrs["classes"] = ["Cleric"]
         attrs["levels"] = [level]
         super().__init__(**attrs)
 
 
 class Druid(Character):
-    def __init__(self, level=1, **attrs):
+    def __init__(self, level: int = 1, **attrs: Any):
         attrs["classes"] = ["Druid"]
         attrs["levels"] = [level]
         super().__init__(**attrs)
 
 
 class Fighter(Character):
-    def __init__(self, level=1, **attrs):
+    def __init__(self, level: int = 1, **attrs: Any):
         attrs["classes"] = ["Fighter"]
         attrs["levels"] = [level]
         super().__init__(**attrs)
 
 
 class Monk(Character):
-    def __init__(self, level=1, **attrs):
+    def __init__(self, level: int = 1, **attrs: Any):
         attrs["classes"] = ["Monk"]
         attrs["levels"] = [level]
         super().__init__(**attrs)
 
 
 class Paladin(Character):
-    def __init__(self, level=1, **attrs):
+    def __init__(self, level: int = 1, **attrs: Any):
         attrs["classes"] = ["Paladin"]
         attrs["levels"] = [level]
         super().__init__(**attrs)
 
 
 class Ranger(Character):
-    def __init__(self, level=1, **attrs):
+    def __init__(self, level: int = 1, **attrs: Any):
         attrs["classes"] = ["Ranger"]
         attrs["levels"] = [level]
         super().__init__(**attrs)
 
 
 class Rogue(Character):
-    def __init__(self, level=1, **attrs):
+    def __init__(self, level: int = 1, **attrs: Any):
         attrs["classes"] = ["Rogue"]
         attrs["levels"] = [level]
         super().__init__(**attrs)
 
 
 class Sorceror(Character):
-    def __init__(self, level=1, **attrs):
+    def __init__(self, level: int = 1, **attrs: Any):
         attrs["classes"] = ["Sorceror"]
         attrs["levels"] = [level]
         super().__init__(**attrs)
 
 
 class Warlock(Character):
-    def __init__(self, level=1, **attrs):
+    def __init__(self, level: int = 1, **attrs: Any):
         attrs["classes"] = ["Warlock"]
         attrs["levels"] = [level]
         super().__init__(**attrs)
 
 
 class Wizard(Character):
-    def __init__(self, level=1, **attrs):
+    def __init__(self, level: int = 1, **attrs: Any):
         attrs["classes"] = ["Wizard"]
         attrs["levels"] = [level]
         super().__init__(**attrs)

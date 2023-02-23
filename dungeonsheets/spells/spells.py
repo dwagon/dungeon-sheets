@@ -1,3 +1,4 @@
+from typing import Any, Tuple
 from dungeonsheets import spells
 
 
@@ -9,41 +10,19 @@ def all_spells():
             yield spell
 
 
-def create_spell(**params):
-    """Create a new subclass of ``Spell`` with given default parameters.
-
-    Useful for spells that haven't been entered into the ``spells.py``
-    file yet.
-
-    Parameters
-    ----------
-    params : optional
-      Saved as attributes of the new class.
-
-    Returns
-    -------
-    NewSpell
-      New spell class, subclass of ``Spell``, with given params.
-    """
-    NewSpell = Spell
-    NewSpell.name = params.get("name", "Unknown Spell")
-    NewSpell.level = params.get("level", 9)
-    return NewSpell
-
-
 class Spell:
     """A magical spell castable by a player character."""
 
-    level = 0
-    name = "Unknown spell"
-    casting_time = "1 action"
-    casting_range = "60 ft"
-    components = ()
-    materials = ""
-    duration = "instantaneous"
-    ritual = False
-    _concentration = False
-    magic_school = ""
+    level:int = 0
+    name: str = "Unknown spell"
+    casting_time: str = "1 action"
+    casting_range:str = "60 ft"
+    components: Tuple[str,...] = ()
+    materials: str = ""
+    duration: str = "instantaneous"
+    ritual: bool = False
+    _concentration: bool = False
+    magic_school: str = ""
     classes = ()
 
     def __str__(self):
@@ -87,3 +66,25 @@ class Spell:
     @property
     def special_material(self):
         return "worth" in self.materials.lower()
+
+
+def create_spell(**params: Any) -> Spell:
+    """Create a new subclass of ``Spell`` with given default parameters.
+
+    Useful for spells that haven't been entered into the ``spells.py``
+    file yet.
+
+    Parameters
+    ----------
+    params : optional
+      Saved as attributes of the new class.
+
+    Returns
+    -------
+    NewSpell
+      New spell class, subclass of ``Spell``, with given params.
+    """
+    NewSpell = Spell
+    NewSpell.name = params.get("name", "Unknown Spell")
+    NewSpell.level = params.get("level", 9)
+    return NewSpell

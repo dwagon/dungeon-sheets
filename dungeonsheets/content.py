@@ -10,7 +10,7 @@ from dungeonsheets.stats import Ability, ArmorClass, Initiative, Speed, Skill
 from dungeonsheets.content_registry import find_content
 
 
-def read(fname):
+def read(fname: str) -> str:
     return open((Path(__file__).parent / fname).resolve()).read()
 
 
@@ -24,6 +24,7 @@ class Content(ABC):
     have this base class in its inheritance tree.
 
     """
+
     dungeonsheets_version = __version__
     name = "Generic content"
 
@@ -119,6 +120,7 @@ class Creature(Content):
     directly!
 
     """
+
     # General attributes
     alignment = "Neutral"
     _race = None
@@ -208,18 +210,38 @@ class Creature(Content):
 
     @property
     def abilities(self):
-        return [self.strength, self.dexterity, self.constitution,
-                self.intelligence, self.wisdom, self.charisma]
+        return [
+            self.strength,
+            self.dexterity,
+            self.constitution,
+            self.intelligence,
+            self.wisdom,
+            self.charisma,
+        ]
 
     @property
     def skills(self):
-        return [self.acrobatics, self.animal_handling, self.arcana,
-                self.athletics, self.deception, self.history,
-                self.insight, self.intimidation, self.investigation,
-                self.medicine, self.nature, self.perception,
-                self.performance, self.persuasion, self.religion,
-                self.sleight_of_hand, self.stealth, self.survival]
-    
+        return [
+            self.acrobatics,
+            self.animal_handling,
+            self.arcana,
+            self.athletics,
+            self.deception,
+            self.history,
+            self.insight,
+            self.intimidation,
+            self.investigation,
+            self.medicine,
+            self.nature,
+            self.perception,
+            self.performance,
+            self.persuasion,
+            self.religion,
+            self.sleight_of_hand,
+            self.stealth,
+            self.survival,
+        ]
+
     @property
     def is_spellcaster(self):
         raise NotImplementedError

@@ -9,26 +9,26 @@ default_content_registry.add_module(__name__)
 
 
 class Race:
-    name = "Unknown"
-    size = "medium"
-    speed = 30
+    name: str = "Unknown"
+    size: str = "medium"
+    speed: int = 30
     owner = None
-    languages = ("Common",)
-    proficiencies_text = tuple()
-    weapon_proficiencies = tuple()
+    languages: tuple[str, ...] = ("Common",)
+    proficiencies_text: tuple[str, ...] = tuple()
+    weapon_proficiencies: tuple[weapons.Weapon,...] = tuple()
     skill_proficiencies = ()
     skill_choices = ()
     num_skill_choices = 0
-    features = tuple()
+    features: tuple[feats.Feature,...] = tuple()
     features_by_level = defaultdict(list)
-    strength_bonus = 0
-    dexterity_bonus = 0
-    constitution_bonus = 0
-    intelligence_bonus = 0
-    wisdom_bonus = 0
-    charisma_bonus = 0
-    hit_point_bonus = 0
-    spells_known = ()
+    strength_bonus: int = 0
+    dexterity_bonus: int = 0
+    constitution_bonus: int = 0
+    intelligence_bonus: int = 0
+    wisdom_bonus:int = 0
+    charisma_bonus: int = 0
+    hit_point_bonus: int = 0
+    spells_known : tuple[spells.Spell,...]= ()
 
     def __init__(self, owner=None):
         self.owner = owner
@@ -43,13 +43,13 @@ class Race:
         self.spells_known = [S() for S in cls.spells_known]
 
     @property
-    def spells_prepared(self):
+    def spells_prepared(self) -> tuple[spells.Spell,...]:
         return self.spells_known
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '"{:s}"'.format(self.name)
 
 

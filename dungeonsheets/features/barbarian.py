@@ -30,7 +30,7 @@ class Rage(Feature):
     source = "Barbarian"
 
     @property
-    def name(self):
+    def name(self) -> str:
         level = self.owner.Barbarian.level
         num = 2
         if level >= 3:

@@ -1,3 +1,4 @@
+from typing import Optional
 from dungeonsheets.content_registry import default_content_registry
 
 
@@ -7,14 +8,14 @@ default_content_registry.add_module(__name__)
 class Shield:
     """A shield that can be worn on one hand."""
 
-    name = "Shield"
-    cost = "10 gp"
-    base_armor_class = 2
+    name: str = "Shield"
+    cost: str = "10 gp"
+    base_armor_class: int = 2
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '"{:s}"'.format(self.name)
 
     @classmethod
@@ -44,7 +45,7 @@ class NoShield(Shield):
     cost = "0"
     base_armor_class = 0
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
 
@@ -73,19 +74,19 @@ class Armor:
 
     """
 
-    name = "Unknown Armor"
-    cost = "0 gp"
-    base_armor_class = 10
-    dexterity_mod_max = None
-    dexterity_applied = True
-    strength_required = None
-    stealth_disadvantage = False
-    weight = 0  # In lbs
+    name: str = "Unknown Armor"
+    cost: str = "0 gp"
+    base_armor_class: int = 10
+    dexterity_mod_max: Optional[int] = None
+    dexterity_applied: bool = True
+    strength_required: Optional[int] = None
+    stealth_disadvantage: bool = False
+    weight: int = 0  # In lbs
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '"{:s}"'.format(self.name)
 
     @classmethod
